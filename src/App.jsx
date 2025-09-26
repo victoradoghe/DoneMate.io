@@ -41,12 +41,14 @@ export default function App() {
     document.documentElement.setAttribute("data-theme", Theme);
   }, [Theme]);
 
-  // useEffect(() => {
-  //   const Mq = window.matchMedia("(prefers-color-schem: dark)").matches;
-  //   const HandleChange = (e) => SetTheme(e.matches ? "dark" : "light");
-  //   Mq.addEventListener("change", HandleChange);
-  //   return () => Mq.removeEventListener("change", HandleChange);
-  // })
+  useEffect(() => {
+    const Mq = window.matchMedia("(prefers-color-scheme: dark)");
+    SetTheme(Mq.matches ? "dark" : "light");
+    const HandleChange = (e) => SetTheme(e.matches ? "dark" : "light");
+
+    Mq.addEventListener("change", HandleChange);
+    return () => Mq.removeEventListener("change", HandleChange);
+  }, [])
 
   const ToggleTheme = () => {
     SetTheme(Theme === "light" ? "dark" : "light")
