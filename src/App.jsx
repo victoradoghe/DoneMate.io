@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { IonCheckmarkDoneCircleOutline } from "./Component/FaviconIcon";
 import "./index.css";
 
+// ---------- useLocalStorage Hook ----------
 function useLocalStorage(key, initial) {
   const [state, setState] = useState(() => {
     try {
@@ -23,36 +24,47 @@ function useLocalStorage(key, initial) {
   return [state, setState];
 }
 
+// ---------- App Component ----------
 export default function App() {
   const [items, setItems] = useLocalStorage("DoneMateItems", []);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
-  const [user /*, setUser*/] = useState(null); // supabase user (kept commented..)
+  const [user /*, setUser*/] = useState(null); // supabase user
   const [Theme, SetTheme] = useState("light");
 
+  // Theme: system preference & changes
   useEffect(() => {
-    const SystemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    SetTheme(SystemPrefersDark ? "dark" : "light")
-  }, [])
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
 
+    // Initial theme
+    SetTheme(mq.matches ? "dark" : "light");
 
+    // Listener for system changes
+    const handleChange = (e) => SetTheme(e.matches ? "dark" : "light");
+
+    if (mq.addEventListener) {
+      mq.addEventListener("change", handleChange);
+    } else if (mq.addListener) {
+      mq.addListener(handleChange);
+    }
+
+    return () => {
+      if (mq.removeEventListener) {
+        mq.removeEventListener("change", handleChange);
+      } else if (mq.removeListener) {
+        mq.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  // Apply theme to document
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", Theme);
   }, [Theme]);
 
-  useEffect(() => {
-    const Mq = window.matchMedia("(prefers-color-scheme: dark)");
-    SetTheme(Mq.matches ? "dark" : "light");
-    const HandleChange = (e) => SetTheme(e.matches ? "dark" : "light");
-
-    Mq.addEventListener("change", HandleChange);
-    return () => Mq.removeEventListener("change", HandleChange);
-  }, [])
-
-  const ToggleTheme = () => {
-    SetTheme(Theme === "light" ? "dark" : "light")
-  }
+  // Toggle theme manually
+  const ToggleTheme = () => SetTheme(Theme === "light" ? "dark" : "light");
 
   // Add item
   function handleAddItem(item) {
@@ -85,17 +97,10 @@ export default function App() {
     setItems([]);
   }
 
-  // NOTE: Supabase auth listener example (kept commented out)
-  // useEffect(() => {
-  //   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-  //     setUser(session?.user ?? null);
-  //   });
-  //   return () => subscription?.unsubscribe();
-  // }, []);
-
   return (
     <div className="dm-app">
-      <Header user={user} ToggleTheme={ToggleTheme} Theme={Theme}/>
+      <Header ToggleTheme={ToggleTheme} Theme={Theme} user={user} />
+
       <div className="dm-container">
         <aside className="dm-sidebar">
           <div className="sidebar-section">
@@ -112,7 +117,17 @@ export default function App() {
         </aside>
 
         <main className="dm-main">
-          <AddBar onAdd={(desc) => handleAddItem({ description: desc, packed: false, id: Date.now(), createdAt: new Date(), doneAt: null })} />
+          <AddBar
+            onAdd={(desc) =>
+              handleAddItem({
+                description: desc,
+                packed: false,
+                id: Date.now(),
+                createdAt: new Date(),
+                doneAt: null,
+              })
+            }
+          />
 
           <section className="list-wrap">
             {items.length === 0 ? (
@@ -183,6 +198,10 @@ export default function App() {
     </div>
   );
 }
+
+// ---------- Components: Header, AddBar, TaskItem, Modals, Stats ----------
+// Keep all other components unchanged from your original code
+
 
 /* ---------- Header ---------- */
 function Header({ToggleTheme, Theme}) {
