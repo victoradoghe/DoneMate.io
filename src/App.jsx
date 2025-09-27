@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 // import { supabase } from "./supabaseClient";
 // import AuthForm from "./Components/AuthForm";
 import { IonCheckmarkDoneCircleOutline } from "./Component/FaviconIcon";
+// import { LoadingScreen } from "./Component/Loading";
+import LoadingScreen  from "./Component/Loading";
 import "./index.css";
 
 // ---------- useLocalStorage Hook ----------
@@ -24,7 +26,7 @@ function useLocalStorage(key, initial) {
   return [state, setState];
 }
 
-// ---------- App Component ----------
+
 export default function App() {
   const [items, setItems] = useLocalStorage("DoneMateItems", []);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -32,7 +34,9 @@ export default function App() {
   const [itemToEdit, setItemToEdit] = useState(null);
   const [user /*, setUser*/] = useState(null); // supabase user
   const [Theme, SetTheme] = useState("light");
+  const [Loading, SetLoading] = useState(true)
 
+  
   // Theme: system preference & changes
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -63,6 +67,14 @@ export default function App() {
     document.documentElement.setAttribute("data-theme", Theme);
   }, [Theme]);
 
+  useEffect(() => {
+    const Timer = setTimeout(() => SetLoading(false), 2510);
+    return () => clearTimeout(Timer)
+  }, [])
+
+  if(Loading){
+    return <LoadingScreen/>
+  }
   // Toggle theme manually
   const ToggleTheme = () => SetTheme(Theme === "light" ? "dark" : "light");
 
