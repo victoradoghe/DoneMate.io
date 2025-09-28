@@ -677,12 +677,17 @@ body {
   .add-input { font-size:1.2rem; }
   .brand h2 { font-size:1.2rem; }
   .header-right{
-    margin-left: 1.0rem;
+    margin-left: 0.6rem;
   }
   .header-right{
-    margin-bottom: 0.9rem;
+    margin-bottom: 1.5rem;
   }
   .title{
     margin-left: -2.8rem;
+  }
+}
+@media(max-width: 360px){
+  .header-right{
+    
   }
 }
