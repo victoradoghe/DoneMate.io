@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-// import { supabase } from "./supabaseClient";
-// import AuthForm from "./Components/AuthForm";
+import { supabase } from "./supabaseClient";
+import AuthForm from "./Component/AuthForm";
 import { IonCheckmarkDoneCircleOutline } from "./Component/FaviconIcon";
 // import { LoadingScreen } from "./Component/Loading";
 import LoadingScreen  from "./Component/Loading";
+import { IcOutlineForward } from "./Component/Backicon";
 import "./index.css";
 
 // ---------- useLocalStorage Hook ----------
@@ -32,33 +33,36 @@ export default function App() {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [itemToEdit, setItemToEdit] = useState(null);
-  const [user /*, setUser*/] = useState(null); // supabase user
+  const [User, SetUser] = useState(null); // supabase user
   const [Theme, SetTheme] = useState("light");
-  const [Loading, SetLoading] = useState(true)
+  const [Loading, SetLoading] = useState(true);
 
-  
-  // Theme: system preference & changes
+  // ---------- Check session & listen for auth changes ----------
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      SetUser(data.session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      SetUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ---------- Theme: system preference & changes ----------
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-
-    // Initial theme
     SetTheme(mq.matches ? "dark" : "light");
 
-    // Listener for system changes
     const handleChange = (e) => SetTheme(e.matches ? "dark" : "light");
 
-    if (mq.addEventListener) {
-      mq.addEventListener("change", handleChange);
-    } else if (mq.addListener) {
-      mq.addListener(handleChange);
-    }
+    if (mq.addEventListener) mq.addEventListener("change", handleChange);
+    else if (mq.addListener) mq.addListener(handleChange);
 
     return () => {
-      if (mq.removeEventListener) {
-        mq.removeEventListener("change", handleChange);
-      } else if (mq.removeListener) {
-        mq.removeListener(handleChange);
-      }
+      if (mq.removeEventListener) mq.removeEventListener("change", handleChange);
+      else if (mq.removeListener) mq.removeListener(handleChange);
     };
   }, []);
 
@@ -67,28 +71,44 @@ export default function App() {
     document.documentElement.setAttribute("data-theme", Theme);
   }, [Theme]);
 
+  // ---------- Loading screen ----------
   useEffect(() => {
-    const Timer = setTimeout(() => SetLoading(false), 2510);
-    return () => clearTimeout(Timer)
-  }, [])
+    const Timer = setTimeout(() => SetLoading(false), 2000);
+    return () => clearTimeout(Timer);
+  }, []);
 
-  if(Loading){
-    return <LoadingScreen/>
+  // ---------- Render loading screen ----------
+  if (Loading) return <LoadingScreen />;
+
+  // ---------- Render AuthForm if no user ----------
+  if (!User) {
+    return (
+      <div className="loading-container">
+        <div className="loading-screen">
+          <AuthForm />
+        </div>
+      </div>
+    );
   }
-  // Toggle theme manually
+
+  // ---------- Logout ----------
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    SetUser(null);
+  };
+
+  // ---------- Toggle theme ----------
   const ToggleTheme = () => SetTheme(Theme === "light" ? "dark" : "light");
 
-  // Add item
+  // ---------- Item handlers ----------
   function handleAddItem(item) {
     setItems((prev) => [...prev, item]);
   }
 
-  // Delete single
   function handleDelete(id) {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  // Toggle done
   function handleToggleDone(id) {
     setItems((prev) =>
       prev.map((it) =>
@@ -99,25 +119,34 @@ export default function App() {
     );
   }
 
-  // Save edited description
   function handleSaveEdit(id, newDesc) {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, description: newDesc } : it)));
   }
 
-  // Clear all
   function handleClearAll() {
     setItems([]);
   }
 
+
+  // ---------- Main App render ----------
   return (
     <div className="dm-app">
-      <Header ToggleTheme={ToggleTheme} Theme={Theme} user={user} />
+      <Header
+        ToggleTheme={ToggleTheme}
+        Theme={Theme}
+        User={User}
+        onLogout={handleLogout} // pass logout function
+      />
 
       <div className="dm-container">
         <aside className="dm-sidebar">
           <div className="sidebar-section">
             <p className="muted">Quick actions</p>
-            <button className="btn ghost" onClick={() => setShowDeleteAll(true)} disabled={items.length === 0}>
+            <button
+              className="btn ghost"
+              onClick={() => setShowDeleteAll(true)}
+              disabled={items.length === 0}
+            >
               Clear all
             </button>
           </div>
@@ -163,7 +192,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* Modals */}
+      {/* ---------- Modals ---------- */}
       {itemToDelete !== null && (
         <>
           <div className="overlay" onClick={() => setItemToDelete(null)} />
@@ -211,12 +240,21 @@ export default function App() {
   );
 }
 
+
 // ---------- Components: Header, AddBar, TaskItem, Modals, Stats ----------
 // Keep all other components unchanged from your original code
 
 
 /* ---------- Header ---------- */
-function Header({ToggleTheme, Theme}) {
+function Header({ ToggleTheme, Theme, User, onLogout }) {
+  // helper function for initials
+  const getInitials = (user) => {
+    if (!user) return "";
+    const first = user.user_metadata?.firstName || "";
+    const last = user.user_metadata?.surname || "";
+    return (first.charAt(0) + last.charAt(0)).toUpperCase();
+  };
+
   return (
     <header className="dm-header">
       <div className="header-inner">
@@ -225,36 +263,152 @@ function Header({ToggleTheme, Theme}) {
             <IonCheckmarkDoneCircleOutline width={36} height={36} />
             <h1>DoneMate</h1>
           </div>
-          
           <p className="tagline">Focus. Finish. Repeat.</p>
         </div>
+
         <div className="header-right">
-            <button onClick={ToggleTheme} className="toggletheme">{Theme === "light" ? <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-	<g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-		<path stroke-dasharray="36" stroke-dashoffset="36" d="M12 7c2.76 0 5 2.24 5 5c0 2.76 -2.24 5 -5 5c-2.76 0 -5 -2.24 -5 -5c0 -2.76 2.24 -5 5 -5">
-			<animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="36;0" />
-		</path>
-		<path stroke-dasharray="2" stroke-dashoffset="2" d="M12 19v1M19 12h1M12 5v-1M5 12h-1" opacity="0">
-			<animate fill="freeze" attributeName="d" begin="0.6s" dur="0.2s" values="M12 19v1M19 12h1M12 5v-1M5 12h-1;M12 21v1M21 12h1M12 3v-1M3 12h-1" />
-			<animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="2;0" />
-			<set fill="freeze" attributeName="opacity" begin="0.6s" to="1" />
-		</path>
-		<path stroke-dasharray="2" stroke-dashoffset="2" d="M17 17l0.5 0.5M17 7l0.5 -0.5M7 7l-0.5 -0.5M7 17l-0.5 0.5" opacity="0">
-			<animate fill="freeze" attributeName="d" begin="0.8s" dur="0.2s" values="M17 17l0.5 0.5M17 7l0.5 -0.5M7 7l-0.5 -0.5M7 17l-0.5 0.5;M18.5 18.5l0.5 0.5M18.5 5.5l0.5 -0.5M5.5 5.5l-0.5 -0.5M5.5 18.5l-0.5 0.5" />
-			<animate fill="freeze" attributeName="stroke-dashoffset" begin="0.8s" dur="0.2s" values="2;0" />
-			<set fill="freeze" attributeName="opacity" begin="0.8s" to="1" />
-		</path>
-	</g>
-</svg> : <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-	<path fill="none" stroke="#fff" stroke-dasharray="64" stroke-dashoffset="64" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3c-4.97 0 -9 4.03 -9 9c0 4.97 4.03 9 9 9c3.53 0 6.59 -2.04 8.06 -5c0 0 -6.06 1.5 -9.06 -3c-3 -4.5 1 -10 1 -10Z">
-		<animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" />
-	</path>
-</svg>}</button>
-          </div>
+          {User && (
+            <span className="user-profile">
+              {User.user_metadata?.avatar_url ? (
+                <img
+                  src={User.user_metadata.avatar_url}
+                  alt={User.user_metadata.full_name}
+                  className="profile-pic"
+                />
+              ) : (
+                <div className="profile-initials">
+                  {getInitials(User)}
+                </div>
+              )}
+            </span>
+          )}
+
+          {User && (
+            <div className="logout" title="Logout" aria-label="Logout">
+              <span onClick={onLogout}>
+                <IcOutlineForward />
+              </span>
+            </div>
+          )}
+
+          <button onClick={ToggleTheme} className="toggletheme">
+            {Theme === "light" ? (
+              // light mode icon
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  fill="none"
+                  stroke="#000"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeDasharray="36"
+                    strokeDashoffset="36"
+                    d="M12 7c2.76 0 5 2.24 5 5c0 2.76 -2.24 5 -5 5c-2.76 0 -5 -2.24 -5 -5c0 -2.76 2.24 -5 5 -5"
+                  >
+                    <animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      dur="0.5s"
+                      values="36;0"
+                    />
+                  </path>
+                  <path
+                    strokeDasharray="2"
+                    strokeDashoffset="2"
+                    d="M12 19v1M19 12h1M12 5v-1M5 12h-1"
+                    opacity="0"
+                  >
+                    <animate
+                      fill="freeze"
+                      attributeName="d"
+                      begin="0.6s"
+                      dur="0.2s"
+                      values="M12 19v1M19 12h1M12 5v-1M5 12h-1;M12 21v1M21 12h1M12 3v-1M3 12h-1"
+                    />
+                    <animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      begin="0.6s"
+                      dur="0.2s"
+                      values="2;0"
+                    />
+                    <set
+                      fill="freeze"
+                      attributeName="opacity"
+                      begin="0.6s"
+                      to="1"
+                    />
+                  </path>
+                  <path
+                    strokeDasharray="2"
+                    strokeDashoffset="2"
+                    d="M17 17l0.5 0.5M17 7l0.5 -0.5M7 7l-0.5 -0.5M7 17l-0.5 0.5"
+                    opacity="0"
+                  >
+                    <animate
+                      fill="freeze"
+                      attributeName="d"
+                      begin="0.8s"
+                      dur="0.2s"
+                      values="M17 17l0.5 0.5M17 7l0.5 -0.5M7 7l-0.5 -0.5M7 17l-0.5 0.5;M18.5 18.5l0.5 0.5M18.5 5.5l0.5 -0.5M5.5 5.5l-0.5 -0.5M5.5 18.5l-0.5 0.5"
+                    />
+                    <animate
+                      fill="freeze"
+                      attributeName="stroke-dashoffset"
+                      begin="0.8s"
+                      dur="0.2s"
+                      values="2;0"
+                    />
+                    <set
+                      fill="freeze"
+                      attributeName="opacity"
+                      begin="0.8s"
+                      to="1"
+                    />
+                  </path>
+                </g>
+              </svg>
+            ) : (
+              // dark mode icon
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1em"
+                height="1em"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="none"
+                  stroke="#fff"
+                  strokeDasharray="64"
+                  strokeDashoffset="64"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 3c-4.97 0 -9 4.03 -9 9c0 4.97 4.03 9 9 9c3.53 0 6.59 -2.04 8.06 -5c0 0 -6.06 1.5 -9.06 -3c-3 -4.5 1 -10 1 -10Z"
+                >
+                  <animate
+                    fill="freeze"
+                    attributeName="stroke-dashoffset"
+                    dur="0.6s"
+                    values="64;0"
+                  />
+                </path>
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
     </header>
   );
 }
+
 
 /* ---------- AddBar ---------- */
 function AddBar({ onAdd }) {

@@ -12,6 +12,7 @@
   --sidebar-bg: #ffffff;
   --card-bg: #ffffff;
   --btn-bg: #e0e0e0;
+  --btn-lg-bg: #f5f5f5;
 }
 
 /* Dark theme */
@@ -25,6 +26,7 @@
   --sidebar-bg: #252525;
   --card-bg: #2b2b2b;
   --btn-bg: #626060;
+  --btn-lg-bg: #debebe;
 }
 
 /* Apply variables */
@@ -94,6 +96,7 @@ body {
   color: #6b6b6b;
 }
 .header-right{
+  margin-bottom: 1.5rem;
   display:flex;;
   align-items:center;
   gap:1rem;
@@ -283,8 +286,309 @@ body {
 .stats { display:flex; flex-direction:column; gap:0.4rem; font-size:1.3rem; }
 
 
+.user-profile{ 
+  width: 4.3rem;
+  height: 4.3rem;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  gap:0;
+  cursor:pointer;
+  padding:0.1rem 0.4rem;
+  border-radius:8px;
+  
+  
+}
+
+.user-profile:hover{
+  background-color: rgba(0, 0, 0, 0.12);
+  transition: 0.3s;
+
+}
+.profile-initials{
+  margin-left: 0.7rem;
+}
+.user-profile img{
+  margin-top: 6px;
+  width:3.5rem;
+  height:3.5rem;
+  border-radius:50%;
+  object-fit:cover;
+}
+/* .user-profile img:hover{
+  border:2px solid #57dbc5;
+  transition: 0.1s;
+} */
+
+.user-profile span{
+  margin-left:0;
+  font-size:1.4rem;
+  font-weight:500;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+}
+
+.profile-pic{
+  width:3.5rem;
+  height:3.5rem;
+  border-radius:50%;
+  object-fit:cover;
+  transition: 0.1s;
+  
+}
+.profile-pic:hover{
+  background-color: yellow;
+  transition: 0.1s;
+}
 
 
+
+
+/* Authform */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: var(--bg);
+  transition: background 0.3s ease;
+  padding: 1rem;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ---------- Card ---------- */
+.auth-card {
+  background: var(--card-bg);
+  padding: 3rem 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  width: 400px;
+  max-width: 95%;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- Icon & Title ---------- */
+.auth-icon {
+  color: var(--primary);
+  margin-bottom: 1rem;
+  font-size: 3rem;
+}
+
+.auth-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: var(--text);
+}
+
+/* ---------- Form Inputs ---------- */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-input {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+.auth-form input{
+  border: 2px solid rgba(195, 200, 210, 0.06);
+}
+.auth-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 8px rgba(33, 150, 243, 0.3);
+}
+
+/* ---------- Buttons ---------- */
+.auth-btn {
+  padding: 0.9rem 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.auth-btn.primary {
+  background: var(--primary);
+  color: #fff;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.auth-btn.primary:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
+}
+
+.auth-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.auth-btn.google {
+  background: #ffffff;
+  color: black;
+}
+.google-btn{
+  width:1.4rem;
+  height:1.7rem;
+  margin-left:0.2rem;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
+  
+}
+
+.auth-btn.google:hover {
+  background: #c9c5c4;
+  color: black;
+  border:2px solid #57dbc5;
+  transition: 0.2s;
+}
+
+/* ---------- Error & Success Messages ---------- */
+.auth-error {
+  color: #ff4d4f;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  text-align: left;
+}
+
+.auth-success {
+  color: #4caf50;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  text-align: left;
+}
+
+/* ---------- Toggle Text ---------- */
+.auth-toggle-text {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.auth-toggle-text:hover {
+  color: var(--primary);
+}
+
+/* ---------- Divider ---------- */
+.auth-divider {
+  margin: 1.5rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  position: relative;
+  text-align: center;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-divider::before {
+  left: 0;
+}
+
+.auth-divider::after {
+  right: 0;
+}
+
+/* Added more styling for AuthForm */
+/* ---------- Password Wrapper ---------- */
+.auth-password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.auth-input-password {
+  width: 100%;
+  padding-right: 2.5rem; /* give room for the icon inside */
+}
+
+/* place icon inside input */
+.toggle-password-btn {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--text-muted);
+}
+
+.toggle-password-btn:hover {
+  color: var(--text);
+}
+
+
+/* ---------- Logout Button ---------- */
+.logout-btn {
+  background: #f5f5f5;
+  color: var(--text);
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+.logout{
+  margin-top: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 8px;
+  border:1px solid rgba(16,24,40,0.06);
+  background-color: var(--btn-lg-bg);
+  transition: 0.3s;
+}
+.logout:hover{
+  background-color: var(--btn-bg);
+  transition: 0.3s;
+}
+.logout-btn:hover {
+  background: #e0e0e0;
+  border-color: var(--primary);
+}
+
+
+/* Loading-screen */
 .loading-container {
   position: fixed;
   inset: 0;
@@ -364,9 +668,21 @@ body {
   .dm-sidebar { order: 2; }
   .dm-main { order: 1; }
   .header-inner { padding: 0 1.6rem; }
+  .header-right{
+    margin-bottom: 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
   .add-input { font-size:1.2rem; }
   .brand h2 { font-size:1.2rem; }
+  .header-right{
+    margin-left: 3.7rem;
+  }
+  .header-right{
+    margin-bottom: 0.9rem;
+  }
+  .title{
+    margin-left: -1.9rem;
+  }
 }
