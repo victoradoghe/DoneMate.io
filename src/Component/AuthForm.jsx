@@ -51,7 +51,7 @@ function AuthForm() {
 
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: {
-      redirectTo: window.location.origin,
+      redirectTo: "https://victoradoghe.github.io/DoneMate.io/",
     },
    })
     if (error) {
