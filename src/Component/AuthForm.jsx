@@ -50,7 +50,10 @@ function AuthForm() {
   }
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google" })
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: {
+      redirectTo: window.location.origin,
+    },
+   })
     if (error) {
       SetError(error.message)
     } else {
